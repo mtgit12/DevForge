@@ -1,0 +1,17 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "docker",
+            "args": [
+                "compose",
+                "exec",
+                "-T",
+                "api",
+                "php",
+                "artisan",
+                "boost:mcp"
+            ],
+            "cwd": "/Users/miuratakurou/develop/DevForge"
+        }
+    }
+}

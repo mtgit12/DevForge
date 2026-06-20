@@ -17,6 +17,9 @@ IT企業における社員情報と案件情報を一元管理して、スキル
 | Typescript            | 5.x (strict)   |
 | Next.js               | 16.1.16        |
 | shadcn/ui             |                |
+| react-hook-form       |                |
+| zod                   |                |
+| zustand               |                |
 | PHP                   | 8.4            |
 | Laravel               | 13.x.          |
 | MySQL                 | 8.4            |
@@ -87,4 +90,3 @@ docker compose exec -it api php artisan boost:install
 ## コマンド
 
 ## その他
-

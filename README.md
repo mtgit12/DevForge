@@ -19,8 +19,9 @@ IT企業における社員情報と案件情報を一元管理して、スキル
 | shadcn/ui             |                |
 | react-hook-form       |                |
 | zod                   |                |
+| zustand               |                |
 | PHP                   | 8.4            |
-| Laravel               | 12.x.          |
+| Laravel               | 13.x.          |
 | MySQL                 | 8.4            |
 
 ## ディレクトリ構成
@@ -36,7 +37,56 @@ IT企業における社員情報と案件情報を一元管理して、スキル
 
 ## 開発環境構築
 
+### 前提条件
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) がインストール済みで、起動していること
+- Git がインストール済みであること
+
+### 手順
+
+#### 1. リポジトリのクローン
+
+```bash
+git clone <repository-url>
+cd DevForge
+```
+
+#### 2. 環境変数ファイルの作成
+
+```bash
+cp .env.example .env
+```
+
+必要に応じて `.env` の値を編集してください。
+
+#### 3. Docker イメージのビルドとコンテナ起動
+
+```bash
+docker compose up -d --build
+```
+
+#### 4. Laravel プロジェクトの初期化（初回のみ）
+
+```bash
+docker compose exec api php artisan key:generate
+docker compose exec api php artisan migrate
+```
+
+#### 5. Laravel Boost 導入（初回のみ）
+
+```bash
+docker compose exec api composer require laravel/boost --dev
+docker compose exec -it api php artisan boost:install
+```
+
+### アクセス先
+
+| サービス | URL |
+|---------|-----|
+| フロントエンド（Next.js） | http://localhost:3000 |
+| バックエンド（Laravel） | http://localhost |
+| MySQL | localhost:3306 |
+
 ## コマンド
 
 ## その他
-

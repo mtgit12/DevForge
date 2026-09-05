@@ -1,0 +1,163 @@
+# =====================================================================
+# 開発環境定義
+#
+#   frontend       : Next.js (Bun) 開発サーバー   profile=dev   :3000
+#   frontend-prod   : Next.js 本番相当ビルド       profile=prod  :3001
+#   db             : MySQL 8.4                   profile なし（常に起動）
+#   api            : 将来追加（Go / Laravel 等）  ※コメントアウト済み
+#
+# 使い方:
+#   docker compose up -d --build              # dev（.env の COMPOSE_PROFILES=dev）
+#   docker compose --profile prod up -d --build frontend-prod db
+#   docker compose down -v                    # ボリュームごと破棄
+# =====================================================================
+
+name: ${COMPOSE_PROJECT_NAME:-myapp}
+
+services:
+  # -------------------------------------------------------------------
+  # Next.js（開発）
+  # -------------------------------------------------------------------
+  frontend:
+    profiles: ["dev"]
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/Dockerfile
+      target: dev
+      args:
+        BUN_VERSION: ${BUN_VERSION:-1}
+    image: ${COMPOSE_PROJECT_NAME:-myapp}-frontend-dev
+    container_name: ${COMPOSE_PROJECT_NAME:-myapp}-frontend
+    environment:
+      NODE_ENV: development
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      WATCHPACK_POLLING: "true"
+      TZ: ${TZ:-Asia/Tokyo}
+      # ブラウザ（クライアント）から叩く URL：ホスト側のポートを指す
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+      # Server Components / Route Handlers から叩く URL：Compose のサービス名を指す
+      API_URL: ${API_URL:-http://api:8080}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      # ソースをバインドマウントして HMR を効かせる
+      - ./frontend:/app
+      # 以下 2 つは匿名ボリューム。ホスト側で上書きされないように保護する
+      - /app/node_modules
+      - /app/.next
+    # depends_on:
+    #   api:
+    #     condition: service_started
+    restart: unless-stopped
+
+  # -------------------------------------------------------------------
+  # Next.js（本番相当・standalone 出力の動作確認用）
+  # -------------------------------------------------------------------
+  frontend-prod:
+    profiles: ["prod"]
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/Dockerfile
+      target: runner
+      args:
+        BUN_VERSION: ${BUN_VERSION:-1}
+    image: ${COMPOSE_PROJECT_NAME:-myapp}-frontend-prod
+    container_name: ${COMPOSE_PROJECT_NAME:-myapp}-frontend-prod
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      TZ: ${TZ:-Asia/Tokyo}
+      API_URL: ${API_URL:-http://api:8080}
+    ports:
+      - "${FRONTEND_PROD_PORT:-3001}:3000"
+    restart: unless-stopped
+
+  # -------------------------------------------------------------------
+  # MySQL
+  # -------------------------------------------------------------------
+  db:
+    image: mysql:${MYSQL_VERSION:-8.4}
+    container_name: ${COMPOSE_PROJECT_NAME:-myapp}-db
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-app}
+      MYSQL_USER: ${MYSQL_USER:-app}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      TZ: ${TZ:-Asia/Tokyo}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./docker/mysql/conf.d:/etc/mysql/conf.d:ro
+      # 初回起動時のみ、この中の .sql / .sh が実行される
+      - ./docker/mysql/initdb.d:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # -------------------------------------------------------------------
+  # API（将来追加）
+  # docker/api/Dockerfile を用意したうえで下記のいずれかを有効化する
+  # -------------------------------------------------------------------
+  #
+  # --- Go の例 -------------------------------------------------------
+  # api:
+  #   build:
+  #     context: ./api
+  #     dockerfile: ../docker/api/Dockerfile
+  #     target: dev
+  #   container_name: ${COMPOSE_PROJECT_NAME:-myapp}-api
+  #   environment:
+  #     TZ: ${TZ:-Asia/Tokyo}
+  #     DB_HOST: db
+  #     DB_PORT: "3306"
+  #     DB_DATABASE: ${MYSQL_DATABASE:-app}
+  #     DB_USERNAME: ${MYSQL_USER:-app}
+  #     DB_PASSWORD: ${MYSQL_PASSWORD:-password}
+  #   ports:
+  #     - "${API_PORT:-8080}:8080"
+  #   volumes:
+  #     - ./api:/app
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+  #
+  # --- Laravel の例（php-fpm ではなく artisan serve / Octane 想定）-----
+  # api:
+  #   build:
+  #     context: ./api
+  #     dockerfile: ../docker/api/Dockerfile
+  #   container_name: ${COMPOSE_PROJECT_NAME:-myapp}-api
+  #   environment:
+  #     APP_ENV: local
+  #     DB_CONNECTION: mysql
+  #     DB_HOST: db
+  #     DB_PORT: "3306"
+  #     DB_DATABASE: ${MYSQL_DATABASE:-app}
+  #     DB_USERNAME: ${MYSQL_USER:-app}
+  #     DB_PASSWORD: ${MYSQL_PASSWORD:-password}
+  #   ports:
+  #     - "${API_PORT:-8080}:8080"
+  #   volumes:
+  #     - ./api:/var/www/html
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+
+volumes:
+  db-data:

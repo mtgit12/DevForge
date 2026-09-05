@@ -20,37 +20,65 @@ repository/
 └── README.md
 ```
 
-## 前提
+## 使用技術
 
-- Docker Desktop（Compose v2）
-- Next.js 側に `output: "standalone"` の設定が必要
+### フロントエンド（`frontend/`）
 
-```ts
-// frontend/next.config.ts
-import type { NextConfig } from "next";
+| 分類 | 技術 | バージョン |
+| --- | --- | --- |
+| 言語 | TypeScript | ^5 |
+| フレームワーク | Next.js（App Router / standalone 出力） | 16.3.4 |
+| UI ライブラリ | React / React DOM | 19.2.8 |
+| ランタイム | Bun | 1.4.1 |
+| CSS | Tailwind CSS | ^4 |
+| UI コンポーネント | shadcn/ui | ^4.21.0 |
+| フォーム | React Hook Form | ^7.87.0 |
+| バリデーション | Zod | ^4.5.4 |
+| 状態管理 | Zustand | ^5.0.15 |
+| Lint / Format | Biome | 2.4.2 |
 
-const nextConfig: NextConfig = {
-  output: "standalone",
-};
+バージョンは `frontend/package.json` を正としてください。
 
-export default nextConfig;
-```
+### バックエンド（`api/`）
 
-## セットアップ
+現時点では未実装（将来追加）です。追加時は `docker/api/Dockerfile` と `compose.yaml` の `api` サービス（Go / Laravel のサンプルをコメントで用意済み）を有効化してください。詳細は後述の「API を追加するとき」を参照。
+
+### インフラ
+
+| 分類 | 技術 | バージョン |
+| --- | --- | --- |
+| コンテナ | Docker Compose | - |
+| DB | MySQL | 8.4 |
+
+## セットアップ（git clone からの環境構築）
+
+前提: Docker / Docker Compose がインストールされていること。
 
 ```bash
-# 1. 環境変数を用意
+# 1. リポジトリを取得
+git clone git@github.com:mtgit12/DevForge.git
+cd DevForge
+
+# 2. 環境変数ファイルを用意
 cp .env.example .env
+# 必要に応じて .env の値（ポート番号や DB 認証情報など）を編集する
 
-# 2. Next.js アプリを作成（既存プロジェクトがある場合は frontend/ に配置）
-bunx create-next-app@latest frontend
-
-# 3. 起動
+# 3. コンテナをビルドして起動（開発環境）
 docker compose up -d --build
+
+# 4. 起動確認
+docker compose logs -f frontend
 ```
 
-- フロントエンド: http://localhost:3000
-- MySQL: `localhost:3306`（ユーザー / パスワードは `.env` を参照）
+起動後、ブラウザで [http://localhost:3000](http://localhost:3000) にアクセスすると Next.js の開発サーバーが確認できます。
+
+停止する場合は以下を実行してください。
+
+```bash
+docker compose down
+```
+
+DB のデータも含めて初期化したい場合は `docker compose down -v` を実行してください。
 
 ## よく使うコマンド
 

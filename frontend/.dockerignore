@@ -1,0 +1,54 @@
+# ビルドコンテキストから除外する（イメージ肥大化・秘密情報の混入を防ぐ）
+
+# 依存関係（イメージ内でインストールするためコピー不要）
+node_modules/
+.pnpm-store/
+
+# ビルド成果物（イメージ内で生成する）
+.next/
+out/
+dist/
+build/
+.vercel/
+.turbo/
+
+# 環境変数ファイル
+.env
+.env.*
+!.env.example
+
+# テスト・カバレッジ
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+.vitest/
+
+# ログ
+*.log
+npm-debug.log*
+bun-debug.log*
+
+# Git / Docker / CI
+.git/
+.gitignore
+.gitattributes
+.github/
+Dockerfile*
+.dockerignore
+compose*.yaml
+compose*.yml
+
+# エディタ・OS
+.vscode/
+.idea/
+.cursor/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ドキュメント・メタデータ
+*.md
+docs/
+*.tsbuildinfo
+.eslintcache

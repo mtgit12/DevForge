@@ -36,6 +36,7 @@ repository/
 | バリデーション | Zod | ^4.5.4 |
 | 状態管理 | Zustand | ^5.0.15 |
 | Lint / Format | Biome | 2.4.2 |
+| テスト | Vitest（+ Testing Library / jsdom） | ^5.0.0 |
 
 バージョンは `front/package.json` を正としてください。
 

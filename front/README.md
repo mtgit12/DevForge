@@ -17,6 +17,10 @@
 | 型チェック | `bun run typecheck` |
 | Lint（Biome） | `bun run lint` |
 | フォーマット（Biome, 自動修正） | `bun run format` |
+| テスト（Vitest, watch モード） | `bunx vitest` |
+| テスト（Vitest, 1 回実行 / CI 向け） | `bunx vitest run` |
+| テスト（Vitest, カバレッジ計測） | `bunx vitest run --coverage` |
+| テスト（Vitest, 特定ファイルのみ） | `bunx vitest run <path>` |
 | shadcn/ui コンポーネント追加 | `bunx shadcn@latest add <component>` |
 
 ---

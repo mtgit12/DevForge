@@ -5,13 +5,13 @@
 ```
 repository/
 ├── docker/
-│   ├── frontend/
+│   ├── front/
 │   │   └── Dockerfile          # Bun + Next.js（dev / builder / runner の多段構成）
 │   ├── api/                    # 将来追加
 │   └── mysql/
 │       ├── conf.d/my.cnf       # MySQL 追加設定
 │       └── initdb.d/           # 初回起動時に実行される .sql / .sh
-├── frontend/                   # Next.js アプリ本体（create-next-app の出力先）
+├── front/                      # Next.js アプリ本体（create-next-app の出力先）
 │   └── .dockerignore
 ├── api/                        # 将来追加
 ├── compose.yaml
@@ -22,7 +22,7 @@ repository/
 
 ## 使用技術
 
-### フロントエンド（`frontend/`）
+### フロントエンド（`front/`）
 
 | 分類 | 技術 | バージョン |
 | --- | --- | --- |
@@ -37,7 +37,7 @@ repository/
 | 状態管理 | Zustand | ^5.0.15 |
 | Lint / Format | Biome | 2.4.2 |
 
-バージョンは `frontend/package.json` を正としてください。
+バージョンは `front/package.json` を正としてください。
 
 ### バックエンド（`api/`）
 
@@ -67,7 +67,7 @@ cp .env.example .env
 docker compose up -d --build
 
 # 4. 起動確認
-docker compose logs -f frontend
+docker compose logs -f front
 ```
 
 起動後、ブラウザで [http://localhost:3000](http://localhost:3000) にアクセスすると Next.js の開発サーバーが確認できます。
@@ -85,21 +85,21 @@ DB のデータも含めて初期化したい場合は `docker compose down -v` 
 | 目的 | コマンド |
 | --- | --- |
 | 開発環境を起動 | `docker compose up -d --build` |
-| ログを追う | `docker compose logs -f frontend` |
-| コンテナに入る | `docker compose exec frontend sh` |
-| パッケージを追加 | `docker compose exec frontend bun add <pkg>` |
+| ログを追う | `docker compose logs -f front` |
+| コンテナに入る | `docker compose exec front sh` |
+| パッケージを追加 | `docker compose exec front bun add <pkg>` |
 | 停止 | `docker compose down` |
 | DB ごと初期化 | `docker compose down -v` |
-| 本番相当ビルドを確認 | `docker compose --profile prod up -d --build frontend-prod db` |
+| 本番相当ビルドを確認 | `docker compose --profile prod up -d --build front-prod db` |
 | MySQL に接続 | `docker compose exec db mysql -u app -p app` |
 
-本番相当の確認用サービス `frontend-prod` はポート 3001 で公開しています（開発用の 3000 と衝突しないため）。
+本番相当の確認用サービス `front-prod` はポート 3001 で公開しています（開発用の 3000 と衝突しないため）。
 
 ## 設計上のポイント
 
 ### プロファイルによる dev / prod の切り替え
 
-`frontend` は `dev`、`frontend-prod` は `prod` プロファイルに属します。
+`front` は `dev`、`front-prod` は `prod` プロファイルに属します。
 `.env` の `COMPOSE_PROFILES=dev` により、通常の `docker compose up` では開発用のみが起動します。
 `db` はプロファイル指定なしのため、どちらの場合も常に起動します。
 
@@ -108,7 +108,7 @@ DB のデータも含めて初期化したい場合は `docker compose down -v` 
 1. `api/` にアプリのソースを置く
 2. `docker/api/Dockerfile` を作成する
 3. `compose.yaml` の `api` サービス（Go / Laravel 用のサンプルをコメントで用意済み）を有効化する
-4. `frontend` の `depends_on` のコメントを外す
+4. `front` の `depends_on` のコメントを外す
 
 `api` は `depends_on.db.condition: service_healthy` を指定しているため、MySQL のヘルスチェック通過後に起動します。
 マイグレーション実行時の「DB がまだ起動していない」問題を防げます。

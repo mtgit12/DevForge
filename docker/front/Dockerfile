@@ -10,7 +10,7 @@
 #   builder : 本番ビルド（bun run build）
 #   runner  : 本番実行（standalone server.js） -> compose の target: runner
 #
-# build context は ./frontend（Next.js アプリのルート）を想定
+# build context は ./front（Next.js アプリのルート）を想定
 # =====================================================================
 
 ARG BUN_VERSION=1
